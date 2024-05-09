@@ -43,11 +43,18 @@ def generate_unique_name(file_name, folder):
 
 # Look for the desktop path checking the user and the OS language
 def find_desktop_path():
-    for folder_name in ["Users", "Utenti"]:
-        desktop_path = os.path.join("C:/", folder_name, getpass.getuser(), "Desktop")
-        if os.path.exists(desktop_path):
-            return Path(desktop_path)
-    return None
+    global desktop_path
+    operating_system = read_running_mode_from_configuration_file("operating-sistem")
+    print(f"Operating system: {operating_system}")
+    if operating_system.upper() == "WINDOWS":
+        for folder_name in ["Users", "Utenti"]:
+            desktop_path = os.path.join("C:/", folder_name, getpass.getuser(), "Desktop")
+    elif operating_system.upper() == "LINUX":
+        desktop_path = os.path.join("/home", getpass.getuser(), "Scrivania")
+    if os.path.exists(desktop_path):
+        return Path(desktop_path)
+    else:
+        return None
 
 
 # Read mode from YAML configuration file
