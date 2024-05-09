@@ -1,3 +1,4 @@
 Settings:
   mode: DEFAULT # CUSTOM, DEFAULT
+  operating_system: WINDOWS # WINDOWS, LINUX
   main_folder: APPUNTI # DEFAULT NAME FOR THE MAIN FOLDER
