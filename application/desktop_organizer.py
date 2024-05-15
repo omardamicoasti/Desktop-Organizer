@@ -4,6 +4,7 @@ import getpass
 import re
 import yaml
 import logging
+import platform
 from pathlib import Path
 from datetime import datetime
 
@@ -44,14 +45,22 @@ def generate_unique_name(file_name, folder):
 # Look for the desktop path checking the user and the OS language
 def find_desktop_path():
     global desktop_path
-    operating_system = read_running_mode_from_configuration_file("operating-sistem")
-    print(f"Operating system: {operating_system}")
-    if operating_system.upper() == "WINDOWS":
-        for folder_name in ["Users", "Utenti"]:
-            desktop_path = os.path.join("C:/", folder_name, getpass.getuser(), "Desktop")
-    elif operating_system.upper() == "LINUX":
+
+    operating_system = platform.system().lower()
+    system_drive = os.path.splitdrive(os.getcwd())[0] + "/"
+
+    if operating_system == "windows":
+        if os.path.exists(system_drive + "Users"):
+            desktop_path = os.path.join(system_drive, "Users", getpass.getuser(), "Desktop")
+        elif os.path.exists(system_drive + "Utenti"):
+            desktop_path = os.path.join(system_drive, "Utenti", getpass.getuser(), "Desktop")
+    elif operating_system == "linux":
         desktop_path = os.path.join("/home", getpass.getuser(), "Scrivania")
+    elif operating_system == "darwin":  # macOS
+        desktop_path = os.path.join("/Users", getpass.getuser(), "Desktop")
+
     if os.path.exists(desktop_path):
+        logging.info(f"Desktop path: {desktop_path}")
         return Path(desktop_path)
     else:
         return None
@@ -70,6 +79,7 @@ def read_running_mode_from_configuration_file(parameter):
 def organize_files_on_desktop():
 
     global date_format_picked
+
     # Find desktop path
     desktop_path = find_desktop_path()
     if desktop_path is None:
@@ -106,7 +116,6 @@ def organize_files_on_desktop():
         today_folder = main_folder / datetime.today().strftime(date_format_picked)
     else:
         today_folder = main_folder / datetime.today().strftime(date_formats[0])
-
 
     # If today's folder does not exist, create it
     if not today_folder.exists():
