@@ -43,20 +43,22 @@ def generate_unique_name(file_name, folder):
 
 
 # Look for the desktop path checking the user and the OS language
-def find_desktop_path():
+def find_desktop_path(running_mode):
     global desktop_path
 
     operating_system = platform.system().lower()
     system_drive = os.path.splitdrive(os.getcwd())[0] + "/"
 
-    if operating_system == "windows":
-        if os.path.exists(system_drive + "Users"):
-            desktop_path = os.path.join(system_drive, "Users", getpass.getuser(), "Desktop")
-        elif os.path.exists(system_drive + "Utenti"):
-            desktop_path = os.path.join(system_drive, "Utenti", getpass.getuser(), "Desktop")
+    if running_mode.upper() == "CUSTOM":
+        folder_to_organize = input("Quale folder vuoi riorganizzare? ").capitalize()
+    else:
+        folder_to_organize = "Desktop"
+
+    if operating_system == "windows" and os.path.exists(system_drive + "Users"):
+        desktop_path = os.path.join(system_drive, "Users", getpass.getuser(), folder_to_organize)
     elif operating_system == "linux":
         desktop_path = os.path.join("/home", getpass.getuser(), "Scrivania")
-    elif operating_system == "darwin":  # macOS
+    elif operating_system == "darwin":
         desktop_path = os.path.join("/Users", getpass.getuser(), "Desktop")
 
     if os.path.exists(desktop_path):
@@ -78,20 +80,20 @@ def read_running_mode_from_configuration_file(parameter):
 # Organize files on desktop
 def organize_files_on_desktop():
 
+    # Identify the running mode if CUSTOM or DEFAULT
+    running_mode = read_running_mode_from_configuration_file('mode')
+    logging.info(f"Application running in {running_mode} mode.")
+
     global date_format_picked
 
     # Find desktop path
-    desktop_path = find_desktop_path()
+    desktop_path = find_desktop_path(running_mode)
     if desktop_path is None:
         logging.error("Desktop path not found.")
         return
 
-    # Identify the running mode if CUSTOM or DEFAULT
-    mode = read_running_mode_from_configuration_file('mode')
-    logging.info(f"Application running in {mode} mode.")
-
     # Ask user to input the name of the folder where to store files and define data formats
-    if mode == "CUSTOM":
+    if running_mode == "CUSTOM":
         main_folder = desktop_path / clean_dir_name(
             input("\nInserisci il nome della cartella dove contenere i tuoi file : "))
         date_format_input = input(
